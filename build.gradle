@@ -13,12 +13,23 @@ sourceCompatibility = '17'
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/matiaslcoulougian/printscript-language")
+        credentials {
+            username = project.findProperty("gpr.user") ?: "SegunMarcaida"
+            password = project.findProperty("gpr.key") ?: "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"
+        }
+    }
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'printscript-language:lexer:0.1.1-SNAPSHOT'
+    implementation 'printscript-language:parser:0.1.1-SNAPSHOT'
+    implementation 'printscript-language:ast:0.1.1-SNAPSHOT'
+    implementation 'printscript-language:formatter:0.0.1-SNAPSHOT'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

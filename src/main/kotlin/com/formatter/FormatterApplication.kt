@@ -22,7 +22,7 @@ class MessageController(
     fun index(@RequestParam("name") name: String) = "Hello, $name!"
 
     @GetMapping("/format")
-    fun format(@RequestBody snippet: Snippet): Snippet {
-        return formatService.format(snippet)
+    fun format(@RequestBody snippetId: String): Snippet {
+        return formatService.format(snippetId)
     }
 }

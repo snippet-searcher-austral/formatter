@@ -8,17 +8,9 @@ enum class SnippetType {
 }
 
 data class Snippet(
-    val id: UUID? = null,
+    val id: String = "",
 
     val userId: String = "",
 
-    val name: String = "",
-
-    val type: SnippetType = SnippetType.PRINTSCRIPT,
-
     var content: String = "",
-
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
-    val updatedAt: LocalDateTime = LocalDateTime.now()
 )

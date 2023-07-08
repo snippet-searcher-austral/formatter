@@ -23,7 +23,8 @@ class FormatService {
          try {
              val snippet= getSnippet(snippetId)
              snippet.content = formatContent(snippet)
-                return saveSnippet(snippet)
+             saveSnippet(snippet)
+             return snippet
          }catch (e: Exception) {
              throw ResponseStatusException(HttpStatus.BAD_REQUEST, "${e.message}")
          }
@@ -56,10 +57,13 @@ class FormatService {
         val response = connection.inputStream.bufferedReader().use { it.readText() }
         connection.disconnect()
         val jsonResponse = JSONObject(response)
-        return jsonResponse as Snippet;
+        val id = jsonResponse.getString("id");
+        val content = jsonResponse.getString("content");
+        val userId = jsonResponse.getString("userId");
+        return Snippet(id, userId, content)
     }
 
-    private fun saveSnippet(snippet: Snippet): Snippet {
+    private fun saveSnippet(snippet: Snippet) {
         val content: String = snippet.content
         val url = "https://snippet-searcher.southafricanorth.cloudapp.azure.com/snippet-manager/snippet/${snippet.id}"
         val requestBody = JSONObject()
@@ -74,7 +78,9 @@ class FormatService {
             val input = requestBody.toString().toByteArray(charset("utf-8"))
             os.write(input, 0, input.size)
         }
-        val code = connection.responseCode
-        return JSONObject(code) as Snippet
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        connection.disconnect()
+
+        println("Response: $response")
     }
 }

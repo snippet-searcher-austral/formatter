@@ -57,9 +57,9 @@ class FormatService {
         val response = connection.inputStream.bufferedReader().use { it.readText() }
         connection.disconnect()
         val jsonResponse = JSONObject(response)
-        val id = jsonResponse.getString("id");
-        val content = jsonResponse.getString("content");
-        val userId = jsonResponse.getString("userId");
+        val id = jsonResponse.getString("id")
+        val content = jsonResponse.getString("content")
+        val userId = jsonResponse.getString("userId")
         return Snippet(id, userId, content)
     }
 

@@ -1,7 +1,11 @@
 package com.formatter.services
 
 import FormatterImpl
+import com.formatter.entity.FormatRule
 import com.formatter.entity.Snippet
+import com.formatter.dto.CreateRulesDTO
+import com.formatter.entity.RuleValue
+import com.formatter.repository.FormatRulesRepository
 import org.json.JSONObject
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -18,7 +22,7 @@ import java.nio.file.Files
 
 
 @Service
-class FormatService {
+class FormatService(private val formatRulesRepository: FormatRulesRepository) {
      fun format(snippetId: String): Snippet {
          try {
              val snippet= getSnippet(snippetId)
@@ -42,6 +46,37 @@ class FormatService {
         tempFile.delete()
         return formattedContent
     }
+
+    fun addRules(rules: CreateRulesDTO) {
+        rules.formatRules.forEach {
+            formatRulesRepository.save(
+                FormatRule(
+                    userId = rules.userId,
+                    rule = it.rule,
+                    value = it.value,
+                )
+            )
+        }
+    }
+
+    fun removeRules(rules: CreateRulesDTO) {
+        rules.formatRules.forEach {
+            formatRulesRepository.delete(
+                FormatRule(
+                    userId = rules.userId,
+                    rule = it.rule,
+                    value = it.value,
+                )
+            )
+        }
+    }
+
+    fun getUserRules(userId: String): List<RuleValue> {
+        val formatRules: List<FormatRule> = formatRulesRepository.findByUserId(userId)
+        return formatRules.map { RuleValue(it.rule, it.value) }
+    }
+
+
 
     private fun getAstIterator(fileContent: InputStream, version: String): ASTIterator {
         val lexer = LexerFactory().createLexer(version, fileContent)

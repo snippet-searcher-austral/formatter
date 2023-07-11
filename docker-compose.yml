@@ -1,10 +1,24 @@
 version: '3'
 
 services:
-  api:
-    container_name: "formatter-api"
-    build:
-      context: .
-      dockerfile: Dockerfile_dev
+#  api:
+#    container_name: "formatter-api"
+#    build:
+#      context: .
+#      dockerfile: Dockerfile_dev
+#    ports:
+#      - 8080:8080
+#      -
+  db:
+    container_name: "formatter-db"
+    image: postgres:12
     ports:
-      - 8080:8080
+      - 5433:5432
+    volumes:
+      - formatter:/var/lib/postgresql/data
+    env_file:
+      - db.env
+
+volumes:
+  formatter:
+    external: true

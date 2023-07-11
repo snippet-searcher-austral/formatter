@@ -33,7 +33,7 @@ dependencies {
     implementation 'printscript-language:lexer:0.1.3-SNAPSHOT'
     implementation 'printscript-language:parser:0.1.3-SNAPSHOT'
     implementation 'printscript-language:ast:0.1.1-SNAPSHOT'
-    implementation 'printscript-language:formatter:0.0.1-SNAPSHOT'
+    implementation 'printscript-language:formatter:0.0.3-SNAPSHOT'
     implementation 'org.json:json:20211205'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

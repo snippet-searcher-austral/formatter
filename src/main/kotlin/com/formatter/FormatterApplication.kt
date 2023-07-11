@@ -1,7 +1,6 @@
 package com.formatter
 
 import com.formatter.dto.CreateRulesDTO
-import com.formatter.entity.FormatRule
 import com.formatter.entity.RuleValue
 import com.formatter.entity.Snippet
 import com.formatter.services.FormatService

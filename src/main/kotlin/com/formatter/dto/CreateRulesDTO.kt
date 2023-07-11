@@ -1,6 +1,5 @@
 package com.formatter.dto
 
-import com.formatter.entity.Rule
 import com.formatter.entity.RuleValue
 
 data class CreateRulesDTO (

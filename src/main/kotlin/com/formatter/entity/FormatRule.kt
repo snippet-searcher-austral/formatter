@@ -13,15 +13,10 @@ enum class Rule {
     NIL,
 }
 
-data class RuleValue (
-    val rule: Rule,
-    val value: String,
-)
-
 @Entity
 @Table(
-    name = "format_rules",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["userId", "rule"])]
+    name = "format_rule",
+    uniqueConstraints = [UniqueConstraint(columnNames = arrayOf("userId", "rule"))]
 )
 @EntityListeners(AuditingEntityListener::class)
 data class FormatRule(
@@ -29,10 +24,11 @@ data class FormatRule(
     @GeneratedValue
     val id: UUID? = null,
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     val userId: String = "",
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     val rule: Rule = Rule.NIL,
 
     @Column(nullable = true)

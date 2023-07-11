@@ -6,5 +6,4 @@ import java.util.UUID
 
 interface FormatRulesRepository: JpaRepository<FormatRule, UUID> {
     fun findByUserId(userId: String): List<FormatRule>
-
 }

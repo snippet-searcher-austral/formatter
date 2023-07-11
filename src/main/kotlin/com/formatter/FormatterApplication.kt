@@ -1,7 +1,7 @@
 package com.formatter
 
 import com.formatter.dto.CreateRulesDTO
-import com.formatter.entity.RuleValue
+import com.formatter.dto.RuleValue
 import com.formatter.entity.Snippet
 import com.formatter.services.FormatService
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -18,23 +18,23 @@ fun main(args: Array<String>) {
 }
 @RestController
 class MessageController(
-    private val formatService: FormatService, ) {
+    private val formatService: FormatService) {
     @GetMapping("/")
     fun index(@RequestParam("name") name: String) = "Hello, $name!"
 
-    @GetMapping("/format/{snippetId}")
-    fun format(@PathVariable snippetId: String): Snippet {
-        return formatService.format(snippetId)
+    @PostMapping("/format/{snippetId}")
+    fun format(@PathVariable snippetId: String, @RequestHeader("Authorization") authorization: String): Snippet {
+        return formatService.format(snippetId, authorization.substring(7))
     }
 
     @PostMapping("/rules/new")
-    fun addRule(@RequestBody createRulesDTO: CreateRulesDTO) {
-        formatService.addRules(createRulesDTO)
+    fun addRule(@RequestBody createRulesDTO: CreateRulesDTO, authentication: Authentication) {
+        formatService.addRules(createRulesDTO, getAuth0Id(authentication))
     }
 
     @PostMapping("/rules/remove")
-    fun removeRules(@RequestBody createRulesDTO: CreateRulesDTO) {
-        formatService.removeRules(createRulesDTO)
+    fun removeRules(@RequestBody createRulesDTO: CreateRulesDTO, authentication: Authentication) {
+        formatService.removeRules(createRulesDTO, getAuth0Id(authentication))
     }
 
     @GetMapping("/rules/me")

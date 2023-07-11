@@ -4,40 +4,43 @@ import FormatterImpl
 import com.formatter.entity.FormatRule
 import com.formatter.entity.Snippet
 import com.formatter.dto.CreateRulesDTO
-import com.formatter.entity.RuleValue
+import com.formatter.dto.RuleValue
+import com.formatter.entity.Rule
+
 import com.formatter.repository.FormatRulesRepository
-import org.json.JSONObject
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
+import prinscript.language.formatter.*
 import printscript.language.lexer.LexerFactory
 import printscript.language.lexer.TokenListIterator
 import printscript.language.parser.ASTIterator
 import printscript.language.parser.ParserFactory
 import java.io.File
 import java.io.InputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.nio.file.Files
 
 
 @Service
-class FormatService(private val formatRulesRepository: FormatRulesRepository) {
-     fun format(snippetId: String): Snippet {
+class FormatService(private val formatRulesRepository: FormatRulesRepository, private val snippetManagerHTTPService: SnippetManagerHTTPService) {
+     fun format(snippetId: String, accessToken: String): Snippet {
          try {
-             val snippet= getSnippet(snippetId)
+             val snippet= snippetManagerHTTPService.getSnippet(snippetId, accessToken)
              snippet.content = formatContent(snippet)
-             saveSnippet(snippet)
+             snippetManagerHTTPService.saveSnippet(snippet,accessToken)
              return snippet
          }catch (e: Exception) {
              throw ResponseStatusException(HttpStatus.BAD_REQUEST, "${e.message}")
          }
      }
+
     fun formatContent(snippet:Snippet): String {
         val fileContent = snippet.content.byteInputStream()
         val astIterator = getAstIterator(fileContent, "1.1")
         val tempFile = File.createTempFile("formatted", ".txt")
-        val formatter = FormatterImpl(tempFile.path)
+        val userRules = getUserRules(snippet.userId)
+        val formattingRules = userRules.map { ruleEnumToClass(it.rule, it.value) }
+        val formatter = FormatterImpl(tempFile.path, formattingRules)
         val formattedString = StringBuilder()
         while (astIterator.hasNext()) {
             formattedString.append(formatter.format(astIterator.next() ?: return ""))
@@ -47,11 +50,11 @@ class FormatService(private val formatRulesRepository: FormatRulesRepository) {
         return formattedContent
     }
 
-    fun addRules(rules: CreateRulesDTO) {
+    fun addRules(rules: CreateRulesDTO, userId: String) {
         rules.formatRules.forEach {
             formatRulesRepository.save(
                 FormatRule(
-                    userId = rules.userId,
+                    userId = userId,
                     rule = it.rule,
                     value = it.value,
                 )
@@ -59,11 +62,11 @@ class FormatService(private val formatRulesRepository: FormatRulesRepository) {
         }
     }
 
-    fun removeRules(rules: CreateRulesDTO) {
+    fun removeRules(rules: CreateRulesDTO, userId: String) {
         rules.formatRules.forEach {
             formatRulesRepository.delete(
                 FormatRule(
-                    userId = rules.userId,
+                    userId = userId,
                     rule = it.rule,
                     value = it.value,
                 )
@@ -85,37 +88,14 @@ class FormatService(private val formatRulesRepository: FormatRulesRepository) {
         return ASTIterator(parser, tokenListIterator)
     }
 
-    private fun getSnippet(snippetId: String): Snippet {
-        val url = URL("https://snippet-searcher.southafricanorth.cloudapp.azure.com/snippet-manager/snippet/$snippetId")
-        val connection = url.openConnection() as HttpURLConnection
-        connection.requestMethod = "GET"
-        val response = connection.inputStream.bufferedReader().use { it.readText() }
-        connection.disconnect()
-        val jsonResponse = JSONObject(response)
-        val id = jsonResponse.getString("id")
-        val content = jsonResponse.getString("content")
-        val userId = jsonResponse.getString("userId")
-        return Snippet(id, userId, content)
-    }
-
-    private fun saveSnippet(snippet: Snippet) {
-        val content: String = snippet.content
-        val url = "https://snippet-searcher.southafricanorth.cloudapp.azure.com/snippet-manager/snippet/${snippet.id}"
-        val requestBody = JSONObject()
-        requestBody.put("content", content)
-        requestBody.put("compliance", "PENDING")
-
-        val connection = URL(url).openConnection() as HttpURLConnection
-        connection.requestMethod = "PUT"
-        connection.doOutput = true
-        connection.setRequestProperty("Content-Type", "application/json; utf-8")
-        connection.outputStream.use { os ->
-            val input = requestBody.toString().toByteArray(charset("utf-8"))
-            os.write(input, 0, input.size)
+    private fun ruleEnumToClass(rule: Rule, value: String = ""): FormattingRule {
+        return when (rule) {
+            Rule.SPACE_AFTER_COLON -> SpaceAfterColon()
+            Rule.SPACE_BEFORE_COLON -> SpaceBeforeColon()
+            Rule.SPACE_AROUND_EQUALS -> SpaceAroundEquals()
+            Rule.NEW_LINE_BEFORE_METHOD -> NewLineBeforeMethod()
+            Rule.INDENT -> IndentSize(value.toInt())
+            else -> throw Exception("Rule not found")
         }
-        val response = connection.inputStream.bufferedReader().use { it.readText() }
-        connection.disconnect()
-
-        println("Response: $response")
     }
 }

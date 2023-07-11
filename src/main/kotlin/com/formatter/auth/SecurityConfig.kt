@@ -1,4 +1,4 @@
-package com.example.authorizer.auth
+package com.formatter.auth
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -27,7 +27,7 @@ class SecurityConfig(
     fun securityWebFilterChain(serverSecurity: ServerHttpSecurity): SecurityWebFilterChain = serverSecurity
         .authorizeExchange {
             it
-                .pathMatchers("/format").authenticated()
+                .pathMatchers("/format/*").authenticated()
                 .pathMatchers("/rules/*").authenticated()
                 .anyExchange().denyAll()
         }

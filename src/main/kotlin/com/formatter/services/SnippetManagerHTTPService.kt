@@ -2,15 +2,14 @@ package com.formatter.services
 
 import com.formatter.entity.Snippet
 import org.json.JSONObject
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.HttpURLConnection
 import java.net.URL
 
 @Service
 class SnippetManagerHTTPService {
-    @Value("\${snippet-manager.url}")
-    private lateinit var baseUrl: String
+
+    private var baseUrl = System.getenv("SNIPPET_MANAGER_URL") ?: "Not found :("
 
     fun getSnippet(snippetId: String, accessToken: String): Snippet {
         val url = URL(baseUrl + snippetId)
